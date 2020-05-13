@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+
+  root-shard:
+    build:
+      context: build/root-shard
+    container_name: ${COMPOSE_PROJECT_NAME}__root-shard
+    volumes:
+      - ${VOLUME_DIR}/${COMPOSE_PROJECT_NAME}/root-shard:/var/lib/clickhouse
+    networks:
+      click_net:
+        aliases:
+          - click_net.root-shard
+
+  shard2_replica1:
+    build:
+      context: build/shard2_replica1
+    container_name: ${COMPOSE_PROJECT_NAME}__shard2_replica1
+    volumes:
+      - ${VOLUME_DIR}/${COMPOSE_PROJECT_NAME}/shard2_replica1:/var/lib/clickhouse
+    networks:
+      click_net:
+        aliases:
+          - click_net.shard2_replica1
+
+  shard2_replica2:
+    build:
+      context: build/shard2_replica2
+    container_name: ${COMPOSE_PROJECT_NAME}__shard2_replica2
+    volumes:
+      - ${VOLUME_DIR}/${COMPOSE_PROJECT_NAME}/shard2_replica2:/var/lib/clickhouse
+    networks:
+      click_net:
+        aliases:
+          - click_net.shard2_replica2
+
+  php:
+    build:
+      context: ./app-php/
+      dockerfile: ${PWD}/build/php/Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME}__php
+    ports:
+      - 9000:9000
+    volumes:
+      - ./app-php/:/app
+
+  zookeeper:
+    image: zookeeper
+    ports:
+      - 2181:2181
+    networks:
+      click_net:
+        aliases:
+          - click_net.zookeeper
+
+networks:
+  click_net:
+    driver: bridge
